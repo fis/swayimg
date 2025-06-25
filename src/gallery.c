@@ -44,6 +44,10 @@ struct gallery {
     argb_t clr_border;     ///< Selected tile border
     argb_t clr_shadow;     ///< Selected tile shadow
 
+    ssize_t mark_size;      ///< Size of the mark rectangle
+    argb_t clr_mark;        ///< Mark rectangle fill
+    argb_t clr_mark_border; ///< Mark rectangle border
+
     struct layout layout; ///< Thumbnail layout
 
     struct keybind* kb; ///< Key bindings
@@ -424,6 +428,31 @@ static void thumb_resize(const char* params)
 }
 
 /**
+ * Draw the indicator for a marked image.
+ * @param window destination window
+ * @param tx thumbnail X coordinate
+ * @param ty thumbnail Y coordinate
+ * @param tw thumbnail image width
+ * @param th thumbnail image height
+ */
+static void draw_marker(struct pixmap* window,
+                        ssize_t tx, ssize_t ty, ssize_t tw, ssize_t th)
+{
+    static const ssize_t border_width = 2;
+
+    ssize_t total_size = ctx.mark_size + 2 * border_width;
+    ssize_t x = tx + tw - border_width - total_size;
+    ssize_t y = ty + th - border_width - total_size;
+    if (x < tx || y < ty) {
+        return; // not enough space for marker
+    }
+
+    pixmap_fill(window, x, y, total_size, total_size, ctx.clr_mark_border);
+    pixmap_fill(window, x + border_width, y + border_width,
+                ctx.mark_size, ctx.mark_size, ctx.clr_mark);
+}
+
+/**
  * Draw thumbnail.
  * @param window destination window
  * @param thumb thumbnail description
@@ -442,6 +471,10 @@ static void draw_thumbnail(struct pixmap* window,
             x += ctx.layout.thumb_size / 2 - pm->width / 2;
             y += ctx.layout.thumb_size / 2 - pm->height / 2;
             pixmap_copy(pm, window, x, y);
+        }
+        if (lth->img->marked && ctx.mark_size > 0) {
+            draw_marker(window, x, y,
+                        ctx.layout.thumb_size, ctx.layout.thumb_size);
         }
     } else {
         // currently selected item
@@ -463,6 +496,9 @@ static void draw_thumbnail(struct pixmap* window,
             const ssize_t ty = y + thumb_size / 2 - thumb_h / 2;
             software_render(pm, window, tx, ty, THUMB_SELECTED_SCALE,
                             ctx.thumb_aa_en ? ctx.thumb_aa : aa_nearest, false);
+        }
+        if (lth->img->marked && ctx.mark_size > 0) {
+            draw_marker(window, x, y, thumb_size, thumb_size);
         }
 
         // shadow
@@ -708,6 +744,10 @@ void gallery_init(const struct config* cfg, struct mode* handlers)
     ctx.clr_select = config_get_color(section, CFG_GLRY_SELECT);
     ctx.clr_border = config_get_color(section, CFG_GLRY_BORDER);
     ctx.clr_shadow = config_get_color(section, CFG_GLRY_SHADOW);
+
+    ctx.mark_size = config_get_num(section, CFG_GLRY_MARK_SIZE, 1, 4096);
+    ctx.clr_mark = config_get_color(section, CFG_GLRY_MARK_COLOR);
+    ctx.clr_mark_border = config_get_color(section, CFG_GLRY_MARK_BORDER);
 
     // load key bindings
     ctx.kb = keybind_load(config_section(cfg, CFG_KEYS_GALLERY));

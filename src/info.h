@@ -7,6 +7,8 @@
 #include "image.h"
 #include "mode.h"
 
+#include <stdbool.h>
+
 /** Available info fields. */
 enum info_field {
     info_file_name,
@@ -20,6 +22,7 @@ enum info_field {
     info_index,
     info_scale,
     info_status,
+    info_mark,
 };
 
 /**
@@ -71,6 +74,12 @@ void info_update(enum info_field field, const char* fmt, ...)
  * @param current,total data to set
  */
 void info_update_index(enum info_field field, size_t current, size_t total);
+
+/**
+ * Update mark info.
+ * @param marked whether the mark info should be shown or not
+ */
+void info_update_mark(bool marked);
 
 /**
  * Print info text.

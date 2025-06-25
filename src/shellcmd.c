@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <poll.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
@@ -211,28 +212,56 @@ int shellcmd_exec(const char* cmd, struct array** out, struct array** err)
     return rc;
 }
 
-char* shellcmd_expr(const char* expr, const char* path)
+static void append_paths(char** cmd, const char** paths, char quote)
+{
+    char delim[4] = " ";
+    if (quote) {
+        delim[0] = delim[2] = quote;
+        delim[1] = ' ';
+    }
+    for (const char** p = paths; *p; ++p) {
+        str_append(*p, 0, cmd);
+        if (p[1]) {
+            str_append(delim, 0, cmd);
+        }
+    }
+}
+
+char* shellcmd_expr(const char* expr, const char** paths)
 {
     char* cmd;
 
     // reserve buffer for command
-    cmd = malloc(strlen(expr) + strlen(path) + 1);
+    size_t paths_len = 0;
+    for (const char** p = paths; *p; ++p) {
+        paths_len += strlen(*p) + 3; // account for delimiter and possible quoting
+    }
+    cmd = malloc(strlen(expr) + paths_len + 1);
     if (!cmd) {
         return NULL;
     }
     *cmd = 0;
 
     // construct command from template
-    while (expr && *expr) {
-        if (*expr == '%') {
-            ++expr;
-            if (*expr != '%') {
-                str_append(path, 0, &cmd); // replace % with path
-                continue;
-            }
+    const char* remain = expr;
+    while (remain && *remain) {
+        size_t literal_part = strcspn(remain, "%");
+        if (literal_part > 0) {
+            str_append(remain, literal_part, &cmd);
+            remain += literal_part;
         }
-        str_append(expr, 1, &cmd);
-        ++expr;
+        if (*remain == '%') {
+            char next = remain[1];
+            if (next == '%') {
+                str_append("%", 1, &cmd);
+                ++remain;
+            } else {
+                char prev = remain > expr ? remain[-1] : 0;
+                bool quoted = (next == '\'' || next == '"') && prev == next;
+                append_paths(&cmd, paths, quoted ? next : 0);
+            }
+            ++remain;
+        }
     }
 
     if (!*cmd) {

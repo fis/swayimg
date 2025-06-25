@@ -211,6 +211,12 @@ bool image_has_info(const struct image* img)
     return img && img->data && img->data->info;
 }
 
+bool image_toggle_marked(struct image* img)
+{
+    img->marked = !img->marked;
+    return img->marked;
+}
+
 void image_flip_vertical(struct image* img)
 {
     struct array* frames = img->data->frames;

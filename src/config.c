@@ -53,17 +53,20 @@ static const struct configdef_kv def_slideshow[] = {
 };
 
 static const struct configdef_kv def_gallery[] = {
-    { CFG_GLRY_SIZE,      "200"       },
-    { CFG_GLRY_CACHE,     "100"       },
-    { CFG_GLRY_PRELOAD,   CFG_NO      },
-    { CFG_GLRY_PSTORE,    CFG_NO      },
-    { CFG_GLRY_FILL,      CFG_YES     },
-    { CFG_GLRY_AA,        "mks13"     },
-    { CFG_GLRY_WINDOW,    "#00000000" },
-    { CFG_GLRY_BKG,       "#202020ff" },
-    { CFG_GLRY_SELECT,    "#404040ff" },
-    { CFG_GLRY_BORDER,    "#000000ff" },
-    { CFG_GLRY_SHADOW,    "#000000ff" },
+    { CFG_GLRY_SIZE,        "200"       },
+    { CFG_GLRY_CACHE,       "100"       },
+    { CFG_GLRY_PRELOAD,     CFG_NO      },
+    { CFG_GLRY_PSTORE,      CFG_NO      },
+    { CFG_GLRY_FILL,        CFG_YES     },
+    { CFG_GLRY_AA,          "mks13"     },
+    { CFG_GLRY_WINDOW,      "#00000000" },
+    { CFG_GLRY_BKG,         "#202020ff" },
+    { CFG_GLRY_SELECT,      "#404040ff" },
+    { CFG_GLRY_BORDER,      "#000000ff" },
+    { CFG_GLRY_SHADOW,      "#000000ff" },
+    { CFG_GLRY_MARK_SIZE,   "15"        },
+    { CFG_GLRY_MARK_COLOR,  "#ffffffff" },
+    { CFG_GLRY_MARK_BORDER, "#00000080" },
 };
 
 static const struct configdef_kv def_list[] = {
@@ -91,7 +94,7 @@ static const struct configdef_kv def_info[] = {
 
 static const struct configdef_kv def_infov[] = {
     { CFG_INFO_TL,        "+name,+format,+filesize,+imagesize,+exif" },
-    { CFG_INFO_TR,        "index"                                    },
+    { CFG_INFO_TR,        "index,mark"                               },
     { CFG_INFO_BL,        "scale,frame"                              },
     { CFG_INFO_BR,        "status"                                   },
 };
@@ -149,6 +152,7 @@ static const struct configdef_kv def_keysv[] = {
     { "a",                "antialiasing"                             },
     { "r",                "reload"                                   },
     { "i",                "info"                                     },
+    { "t",                "mark"                                     },
     { "Shift+Delete",     "exec rm '%' && echo \"File removed: %\""  },
     { "Escape",           "exit"                                     },
     { "q",                "exit"                                     },
@@ -178,6 +182,7 @@ static const struct configdef_kv def_keyss[] = {
     { "d",                "next_dir"                                 },
     { "Space",            "pause"                                    },
     { "i",                "info"                                     },
+    { "t",                "mark"                                     },
     { "f",                "fullscreen"                               },
     { "Return",           "mode"                                     },
     { "Escape",           "exit"                                     },
@@ -201,6 +206,7 @@ static const struct configdef_kv def_keysg[] = {
     { "a",                "antialiasing"                             },
     { "r",                "reload"                                   },
     { "i",                "info"                                     },
+    { "t",                "mark"                                     },
     { "Equal",            "thumb +20"                                },
     { "Plus",             "thumb +20"                                },
     { "Minus",            "thumb -20"                                },

@@ -8,6 +8,8 @@
 #include "list.h"
 #include "render.h"
 
+#include <stdbool.h>
+
 // File name used for image, that is read from stdin through pipe
 #define LDRSRC_STDIN     "stdin://"
 #define LDRSRC_STDIN_LEN (sizeof(LDRSRC_STDIN) - 1)
@@ -83,6 +85,7 @@ struct image {
     char* source;     ///< Image source (e.g. path to the image file)
     const char* name; ///< Name of the image file
     size_t index;     ///< Index of the image
+    bool marked;      ///< Whether the image is part of the marked set
 
     size_t file_size; ///< Size of the image file
     time_t file_time; ///< File modification time
@@ -182,6 +185,13 @@ bool image_has_frames(const struct image* img);
  * @return true if image has meta info
  */
 bool image_has_info(const struct image* img);
+
+/**
+ * Toggle whether the image is considered marked or not.
+ * @param img image context
+ * @return new marked state of the image
+ */
+bool image_toggle_marked(struct image* img);
 
 /**
  * Flip image vertically.

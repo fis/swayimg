@@ -21,7 +21,7 @@ int shellcmd_exec(const char* cmd, struct array** out, struct array** err);
 /**
  * Compose command from expression.
  * @param expr command expression
- * @param path file path to substitute into expression
+ * @param paths file paths to substitute into expression
  * @return result command, caller should free the buffer
  */
-char* shellcmd_expr(const char* expr, const char* path);
+char* shellcmd_expr(const char* expr, const char** paths);

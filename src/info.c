@@ -33,6 +33,7 @@ static const char* field_names[] = {
     [info_frame] = "frame",
     [info_index] = "index",
     [info_scale] = "scale",
+    [info_mark] = "mark",
     [info_status] = "status",
 };
 
@@ -649,6 +650,7 @@ void info_reset(const struct image* img)
 
     info_update(info_frame, NULL);
     info_update(info_scale, NULL);
+    info_update_mark(img->marked);
 
     timeout_reset(&ctx.info);
 }
@@ -696,6 +698,15 @@ void info_update_index(enum info_field field, size_t current, size_t total)
         info_update(field, "%zd of %zd", current, total);
     } else {
         info_update(field, NULL);
+    }
+}
+
+void info_update_mark(bool marked)
+{
+    if (marked) {
+        info_update(info_mark, "%s", "(marked)");
+    } else {
+        info_update(info_mark, NULL);
     }
 }
 

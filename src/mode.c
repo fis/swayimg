@@ -5,6 +5,7 @@
 #include "mode.h"
 
 #include "application.h"
+#include "imglist.h"
 #include "info.h"
 #include "shellcmd.h"
 #include "ui.h"
@@ -13,11 +14,11 @@
 #include <string.h>
 
 /**
- * Execute system command for the specified image.
+ * Execute system command for the specified images.
  * @param expr command expression
- * @param path file path to substitute into expression
+ * @param path file paths to substitute into expression
  */
-static void execute_cmd(const char* expr, const char* path)
+static void execute_cmd(const char* expr, const char** paths)
 {
     const size_t max_status = 60;
     struct array* out = NULL;
@@ -27,7 +28,7 @@ static void execute_cmd(const char* expr, const char* path)
     int rc;
 
     // contruct and execute command
-    cmd = shellcmd_expr(expr, path);
+    cmd = shellcmd_expr(expr, paths);
     if (!cmd) {
         info_update(info_status, "Error: no command to execute");
         app_redraw();
@@ -82,6 +83,34 @@ static void execute_cmd(const char* expr, const char* path)
     app_redraw();
 }
 
+static const char** collect_paths(void)
+{
+    size_t paths_num = 0;
+    for (struct image* img = imglist_first(); img; img = imglist_next(img, false)) {
+        if (img->marked) {
+            ++paths_num;
+        }
+    }
+    if (paths_num == 0) {
+        return NULL;
+    }
+
+    const char** paths = malloc((paths_num + 1) * sizeof(*paths));
+    if (!paths) {
+        return NULL;
+    }
+
+    const char** next_path = paths;
+    for (struct image* img = imglist_first(); img; img = imglist_next(img, false)) {
+        if (img->marked) {
+            *next_path = img->source;
+            ++next_path;
+        }
+    }
+    *next_path = NULL;
+    return paths;
+}
+
 void mode_handle(struct mode* mode, const struct action* action)
 {
     switch (action->type) {
@@ -100,7 +129,26 @@ void mode_handle(struct mode* mode, const struct action* action)
             app_switch_mode(action->params);
             break;
         case action_exec:
-            execute_cmd(action->params, mode->get_current()->source);
+            {
+                const char* paths[] = {
+                    mode->get_current()->source,
+                    NULL,
+                };
+                execute_cmd(action->params, paths);
+            }
+            break;
+        case action_mark:
+            info_update_mark(image_toggle_marked(mode->get_current()));
+            app_redraw();
+            break;
+        case action_exec_marked:
+            {
+                const char** paths = collect_paths();
+                if (paths) {
+                    execute_cmd(action->params, paths);
+                    free(paths);
+                }
+            }
             break;
         case action_help:
             if (help_visible()) {
